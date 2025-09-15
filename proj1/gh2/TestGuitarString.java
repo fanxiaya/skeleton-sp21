@@ -35,7 +35,7 @@ public class TestGuitarString  {
         assertEquals("Sample should not change the state of your string.", sample, s.sample(), 0.0);
         assertEquals("Sample should not change the state of your string.", sample, s.sample(), 0.0);
     }
-
+//[DEBUG]
 
     @Test
     public void testTic() {

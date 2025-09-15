@@ -37,10 +37,11 @@ public class LinkedListDequeTest {
 		*/
     }
 
-    @Test
-    /** Adds an item, then removes an item, and ensures that dll is empty afterwards. */
-    public void addRemoveTest() {
 
+
+    @Test
+    /* Adds an item, then removes an item, and ensures that dll is empty afterwards. */
+    public void addRemoveTest() {
         System.out.println("Make sure to uncomment the lines below (and delete this print statement).");
         /*
         LinkedListDeque<Integer> lld1 = new LinkedListDeque<Integer>();
