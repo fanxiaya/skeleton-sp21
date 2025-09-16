@@ -4,6 +4,10 @@ import java.util.Iterator;
 
 public class LinkedListDeque<T> implements Iterable<T> {
 
+    public int size() {
+        return size;
+    }
+
     /*内部类node*/
     class Node {
         T item;
