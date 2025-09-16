@@ -5,8 +5,8 @@ public class ArrayDeque<T> {
     private Integer size;
     private Integer max;
     private Integer nextFirst;
-    private Integer nowFirst;
-    private Integer nowLast;
+    Integer nowFirst;
+    Integer nowLast;
     private Integer nextLast;
 
 
@@ -16,7 +16,6 @@ public class ArrayDeque<T> {
         max = 8;
         nextFirst = max / 2 - 1;
         nextLast = nextFirst + 1;
-        nowLast = nextLast = max / 2;
     }
 
     private void extendSize() {
@@ -60,7 +59,7 @@ public class ArrayDeque<T> {
         if (size + 1 > max) {
             extendSize();
 
-        } else if (size - 1 <= max / 4) {
+        } else if (size > 16 && size - 1 <= max / 4) {
             reduceSize();
         }
 
