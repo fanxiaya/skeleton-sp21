@@ -1,115 +1,54 @@
 package deque;
 
-public class ArrayDeque<T> {
-    private T[] array;
-    private Integer size;
-    private Integer max;
-    private Integer nextFirst;
-    Integer nowFirst;
-    Integer nowLast;
-    private Integer nextLast;
+import java.util.Iterator;
 
+public class ArrayDeque<T> implements Iterable<T> {
+    private T[] array;
+    private int size;
+    private int max;
+    private int firstEnd; // 指向下一个 addFirst 的位置
+    private int lastEnd;  // 指向下一个 addLast 的位置
 
     public ArrayDeque() {
         size = 0;
-        array = (T[]) new Object[8];
-        max = 8;
-        nextFirst = max / 2 - 1;
-        nextLast = nextFirst + 1;
+        max = 16;
+        array = (T[]) new Object[max];
+        firstEnd = 0;
+        lastEnd = max - 1;
     }
 
     private void extendSize() {
-        T[] newArray = (T[]) new Object[max * 2];
-        if (nowLast == max - 1 && nowFirst == 0) {
-            // 没占用对方的空间
-            System.arraycopy(array, nowFirst, newArray, max / 2, max);
-            nowFirst = max / 2;
-            nowLast += max / 2;
-        } else if (nowFirst > max / 2 - 1) {
-            int numToEnd = max - nowFirst;
-            System.arraycopy(array, nowFirst, newArray, max / 2 - numToEnd, numToEnd);
-            System.arraycopy(array, 0, newArray, max / 4, max - numToEnd);
-            nowFirst = max / 2 - numToEnd;
-            nowLast = max / 4 + nowLast;
-        } else if (nowLast < max / 2) {
-            // 队列被分成两段
-            System.arraycopy(array, nowFirst, newArray, max / 4, max - nowFirst);
-            System.arraycopy(array, 0, newArray, max / 4 + (max - nowFirst), nowLast + 1);
-            nowFirst = max / 4;
-            nowLast = max / 4 + (max - nowFirst) + nowLast;
+        int newMax = max * 2;
+        T[] newArray = (T[]) new Object[newMax];
+        // 将原队列内容顺序复制到新数组
+        for (int i = 0; i < size; i++) {
+            newArray[i] = get(i);
         }
-        max *= 2;
-        setNextFirst();
-        setNextLast();
         array = newArray;
+        max = newMax;
+        firstEnd = 0;
+        lastEnd = size - 1;
     }
 
     private void reduceSize() {
-        T[] newArray = (T[]) new Object[max / 2];
-        System.arraycopy(array, nowFirst, newArray, nowFirst - max / 4, size);
-        nowFirst -= max / 4;
-        nowLast = nowFirst + size;
-        max /= 4;
-        setNextFirst();
-        setNextLast();
+        if (max <= 16) return;
+        int newMax = max / 2;
+        T[] newArray = (T[]) new Object[newMax];
+        for (int i = 0; i < size; i++) {
+            newArray[i] = get(i);
+        }
         array = newArray;
+        max = newMax;
+        firstEnd = 0;
+        lastEnd = size - 1;
     }
 
     private void checkSize() {
         if (size + 1 > max) {
             extendSize();
-
-        } else if (size > 16 && size - 1 <= max / 4) {
+        } else if (max > 16 && size < max / 4) {
             reduceSize();
         }
-
-    }
-
-
-    private void setNextFirst() {
-        //当前设置的first位置是nextFirst
-        if (nowFirst == 0) {
-            nextFirst = max - 1;
-        } else {
-            nextFirst--;
-        }
-    }
-
-
-    private void setNextLast() {
-        if (nowLast == max - 1) {
-            nextLast = 0;
-        } else {
-            nextLast++;
-        }
-
-    }
-
-    //remove专用的set方法
-    private void setNextFirst(Integer index) {
-        nextFirst = index;
-    }
-
-
-    private void setNextLast(Integer index) {
-        nextLast = index;
-    }
-
-
-    public void addFirst(T item) {
-        checkSize();
-        array[nextFirst] = item;
-        nowFirst = nextFirst;
-        setNextFirst();
-        size++;
-    }
-
-    public void addLast(T item) {
-        checkSize();
-        array[nextLast] = item;
-        nowLast = nextLast;
-        setNextLast();
-        size++;
     }
 
     public boolean isEmpty() {
@@ -120,39 +59,88 @@ public class ArrayDeque<T> {
         return size;
     }
 
+    public void addFirst(T item) {
+        checkSize();
+        firstEnd = (firstEnd - 1 + max) % max;
+        array[firstEnd] = item;
+        size++;
+    }
+
+    public void addLast(T item) {
+        checkSize();
+        lastEnd = (lastEnd + 1) % max;
+        array[lastEnd] = item;
+        size++;
+    }
+
+    public T removeFirst() {
+        if (isEmpty()) return null;
+        T item = array[firstEnd];
+        array[firstEnd] = null;
+        firstEnd = (firstEnd + 1) % max;
+        size--;
+        checkSize();
+        return item;
+    }
+
+    public T removeLast() {
+        if (isEmpty()) return null;
+        T item = array[lastEnd];
+        array[lastEnd] = null;
+        lastEnd = (lastEnd - 1 + max) % max;
+        size--;
+        checkSize();
+        return item;
+    }
+
+    public T get(int index) {
+        if (index < 0 || index >= size) return null;
+        int realIndex = (firstEnd + index) % max;
+        return array[realIndex];
+    }
+
+    //    public Iterator<T> iterator() {
+//    }
+//
+    public boolean equals(Object o) {
+        if (!(o instanceof ArrayDeque<?>)) {
+            return false;
+        }
+        ArrayDeque<?> other = (ArrayDeque<?>) o;
+        if (this.size() != other.size()) {
+            return false;
+        }
+        for (int i = 0; i < size(); i++) {
+            if (!(get(i).equals(other.get(i)))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     public void printDeque() {
-        for (int i = 0; i < size; i++) {
-            System.out.println(array[i] + " ");
+        for (int i = 0; i < size(); i++) {
+            System.out.print(get(i) + " ");
         }
         System.out.println();
     }
 
-    public T removeFirst() {
+    class ArrayDequeIterator implements Iterator<T> {
+        int index = 0;
 
-        setNextFirst(nowFirst);
-        T removed = array[nowFirst];
-        array[nowFirst] = null;
-        size--;
-        checkSize();
-        return removed;
+        @Override
+        public boolean hasNext() {
+            return index <= size - 1;
+        }
+
+        @Override
+        public T next() {
+            return get(index++);
+        }
     }
 
-    public T removeLast() {
-        setNextLast(nowLast);
-        T removed = array[nowLast];
-        array[nowLast] = null;
-        size--;
-        checkSize();
-        return removed;
+    @Override
+    public Iterator<T> iterator() {
+        return new ArrayDequeIterator();
     }
-
-    public T get(int index) {
-        return array[index];
-    }
-
-//    public Iterator<T> iterator() {
-//    }
-//
-//    public boolean equals(Object o) {
-//    }
 }
