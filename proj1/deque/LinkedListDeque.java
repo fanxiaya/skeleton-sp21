@@ -1,6 +1,8 @@
 package deque;
 
-public class LinkedListDeque<T> {
+import java.util.Iterator;
+
+public class LinkedListDeque<T> implements Iterable<T> {
 
     /*内部类node*/
     class Node {
@@ -35,14 +37,13 @@ public class LinkedListDeque<T> {
             return this.next;
         }
 
-
     }
 
     //    哨兵节点
     Node sentinel;
     int size;
 
-    LinkedListDeque() {
+    public LinkedListDeque() {
         this.sentinel = new Node(null);
         this.size = 0;
         this.sentinel.setNext(this.sentinel);
@@ -176,23 +177,29 @@ public class LinkedListDeque<T> {
         return true;
     }
 
+    private class LLDIterator implements Iterator<T> {
+        Node current = sentinel;
 
-    public static void main(String[] args) {
-        LinkedListDeque<Integer> deque = new LinkedListDeque<>();
-        deque.addLast(1);
-        deque.addLast(2);
-        deque.addLast(3);
-        deque.addFirst(1);
-        deque.addFirst(2);
-        deque.addFirst(3);
-        deque.removeFirst();
-        deque.removeLast();
-        System.out.println(deque.getRecursive(0));
-        System.out.println(deque.getRecursive(3));
+        @Override
+        public boolean hasNext() {
+            return current.getNext().item != null;
 
+        }
 
-        deque.printDeque();
+        @Override
+        public T next() {
+            if (hasNext()) {
+                current = current.getNext();
+                return current.item;
+            } else {
+                return null;
+            }
+        }
 
     }
 
+    @Override
+    public Iterator<T> iterator() {
+        return new LLDIterator();
+    }
 }
